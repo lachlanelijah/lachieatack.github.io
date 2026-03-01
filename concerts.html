@@ -27,7 +27,7 @@
         <div class="sub">Shows I've attended</div>
       </div>
       <div style="margin-left:auto; text-align:right">
-        <div class="kbd">~ lachieatack@mac:~$</div>
+        <div class="kbd">~ lachlanatack@mac:~$</div>
       </div>
     </header>
 
@@ -88,7 +88,7 @@
     <section>
       <h2>&gt; 2023</h2>
       <div class="card">
-        <strong>King Gizzard &amp; the Lizard Wizard</strong>
+        <strong>King Gizzard & the Lizard Wizard</strong>
         <div class="metadata">Date: 30/3/23 — Venue: Big Top Luna Park</div>
         <div class="metadata">Opener: RMFC</div>
       </div>
@@ -150,7 +150,7 @@
       <h2>&gt; 2025</h2>
       <div class="card">
         <strong>Magdalena Bay</strong>
-        <div class="metadata">Date: 1/3/25 — Venue: Roundhouse</div>
+        <div class="metadata">Date: 3/3/25 — Venue: Roundhouse</div>
         <div class="metadata">Opener: ratbag</div>
       </div>
       <div class="card">
@@ -178,7 +178,7 @@
         <div class="metadata">Opener: Caligula’s Horse</div>
       </div>
       <div class="card">
-        <strong>King Gizzard &amp; the Lizard Wizard</strong>
+        <strong>King Gizzard & the Lizard Wizard</strong>
         <div class="metadata">Date: 2/12/25 — Venue: Opera House (Concert Hall)</div>
       </div>
     </section>
@@ -233,20 +233,35 @@
             }
             const dateKey = normalizeDate(dateRaw);
             const key = artist + '|' + dateKey;
-            const container = card.querySelector('.setlist-content');
+            const details = card.querySelector('.setlist');
+            const container = details ? details.querySelector('.setlist-content') : null;
             let set = json[key] || json[artist] || null;
-            if (!set) {
-              container.textContent = 'No setlist available.';
+            // If there's no setlist page URL, remove the dropdown entirely
+            if (!set || !set.url) {
+              if (details && details.parentNode) details.parentNode.removeChild(details);
               return;
             }
-            if (!set.songs || !set.songs.length) {
-              container.textContent = 'Setlist found but no songs listed.';
-              return;
+            // Build link to setlist.fm
+            const link = document.createElement('a');
+            link.href = set.url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.textContent = 'View on setlist.fm';
+            // Clear container and insert link + optional songs
+            container.innerHTML = '';
+            const linkWrap = document.createElement('div');
+            linkWrap.style.marginBottom = '6px';
+            linkWrap.appendChild(link);
+            container.appendChild(linkWrap);
+            if (set.songs && set.songs.length) {
+              const ul = document.createElement('ol');
+              set.songs.forEach(s => { const li=document.createElement('li'); li.textContent=s; ul.appendChild(li); });
+              container.appendChild(ul);
+            } else {
+              const p = document.createElement('div');
+              p.textContent = 'No songs listed for this setlist.';
+              container.appendChild(p);
             }
-            const ul = document.createElement('ol');
-            set.songs.forEach(s => { const li=document.createElement('li'); li.textContent=s; ul.appendChild(li); });
-            container.innerHTML='';
-            container.appendChild(ul);
           });
         } catch (e) {
           // graceful fallback
