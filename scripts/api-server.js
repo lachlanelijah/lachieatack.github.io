@@ -35,10 +35,10 @@ app.use(authenticateAPI);
 
 app.post('/api/books/add', async (req, res) => {
   try {
-    const { author, title, year = new Date().getFullYear(), note = '' } = req.body;
+    const { firstName, lastName, title, year = new Date().getFullYear(), note = '' } = req.body;
 
-    if (!author || !title) {
-      return res.status(400).json({ error: 'Author and title are required' });
+    if (!firstName || !lastName || !title) {
+      return res.status(400).json({ error: 'First name, last name, and title are required' });
     }
 
     const booksPath = path.join(REPO_PATH, 'data', 'books.json');
@@ -47,13 +47,13 @@ app.post('/api/books/add', async (req, res) => {
       books = JSON.parse(fs.readFileSync(booksPath, 'utf8'));
     }
     if (!books[year]) books[year] = [];
-    books[year].push({ author, title, note });
+    books[year].push({ firstName, lastName, title, note });
     fs.writeFileSync(booksPath, JSON.stringify(books, null, 2));
     execFile('node', [path.join(__dirname, 'generate_reading_html.js')], (err, stdout, stderr) => {
       if (err) console.error('Error running generate_reading_html.js:', stderr);
       else console.log(stdout.trim());
     });
-    await commitChanges(`Add book: ${title} by ${author}`);
+    await commitChanges(`Add book: ${title} by ${firstName} ${lastName}`);
     res.json({ success: true, message: `Added "${title}" to ${year}` });
   } catch (error) {
     console.error('Error adding book:', error);
@@ -77,13 +77,13 @@ app.post('/api/books/list', async (req, res) => {
 // ============ BOOKS UPDATE/DELETE ============
 app.post('/api/books/update', async (req, res) => {
   try {
-    const { year, oldAuthor, oldTitle, author, title, note } = req.body;
+    const { year, oldFirstName, oldLastName, oldTitle, firstName, lastName, title, note } = req.body;
     const booksPath = path.join(REPO_PATH, 'data', 'books.json');
     let books = JSON.parse(fs.readFileSync(booksPath, 'utf8'));
     if (!books[year]) return res.status(404).json({ error: 'Year not found' });
-    const idx = books[year].findIndex(b => b.author === oldAuthor && b.title === oldTitle);
+    const idx = books[year].findIndex(b => b.firstName === oldFirstName && b.lastName === oldLastName && b.title === oldTitle);
     if (idx === -1) return res.status(404).json({ error: 'Book not found' });
-    books[year][idx] = { author, title, note };
+    books[year][idx] = { firstName, lastName, title, note };
     fs.writeFileSync(booksPath, JSON.stringify(books, null, 2));
     execFile('node', [path.join(__dirname, 'generate_reading_html.js')], () => {});
     await commitChanges(`Update book: ${oldTitle} to ${title}`);
@@ -94,11 +94,11 @@ app.post('/api/books/update', async (req, res) => {
 });
 app.post('/api/books/delete', async (req, res) => {
   try {
-    const { year, author, title } = req.body;
+    const { year, firstName, lastName, title } = req.body;
     const booksPath = path.join(REPO_PATH, 'data', 'books.json');
     let books = JSON.parse(fs.readFileSync(booksPath, 'utf8'));
     if (!books[year]) return res.status(404).json({ error: 'Year not found' });
-    books[year] = books[year].filter(b => !(b.author === author && b.title === title));
+    books[year] = books[year].filter(b => !(b.firstName === firstName && b.lastName === lastName && b.title === title));
     fs.writeFileSync(booksPath, JSON.stringify(books, null, 2));
     execFile('node', [path.join(__dirname, 'generate_reading_html.js')], () => {});
     await commitChanges(`Delete book: ${title}`);
@@ -253,7 +253,7 @@ app.post('/api/tv/add', async (req, res) => {
     if (type === 'watched') {
       if (!tv[year]) tv[year] = [];
       tv[year].push({ show, seasons });
-    // ...existing code...
+    }
     fs.writeFileSync(tvPath, JSON.stringify(tv, null, 2));
     execFile('node', [path.join(__dirname, 'generate_tv_html.js')], () => {});
     await commitChanges(`Add TV show: ${show}`);
@@ -287,7 +287,7 @@ app.post('/api/tv/update', async (req, res) => {
       const idx = tv[year].findIndex(s => s.show === oldShow);
       if (idx === -1) return res.status(404).json({ error: 'Show not found' });
       tv[year][idx] = { show, seasons };
-    // ...existing code...
+    }
     fs.writeFileSync(tvPath, JSON.stringify(tv, null, 2));
     execFile('node', [path.join(__dirname, 'generate_tv_html.js')], () => {});
     await commitChanges(`Update TV show: ${oldShow}`);
@@ -304,7 +304,7 @@ app.post('/api/tv/delete', async (req, res) => {
     if (type === 'watched') {
       if (!tv[year]) return res.status(404).json({ error: 'Year not found' });
       tv[year] = tv[year].filter(s => s.show !== show);
-    // ...existing code...
+    }
     fs.writeFileSync(tvPath, JSON.stringify(tv, null, 2));
     execFile('node', [path.join(__dirname, 'generate_tv_html.js')], () => {});
     await commitChanges(`Delete TV show: ${show}`);

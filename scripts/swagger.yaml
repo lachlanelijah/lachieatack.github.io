@@ -15,7 +15,8 @@ paths:
             schema:
               type: object
               properties:
-                author: { type: string }
+                firstName: { type: string }
+                lastName: { type: string }
                 title: { type: string }
                 year: { type: integer }
                 note: { type: string }
@@ -34,7 +35,10 @@ paths:
                 year: { type: integer }
                 oldAuthor: { type: string }
                 oldTitle: { type: string }
-                author: { type: string }
+                oldFirstName: { type: string }
+                oldLastName: { type: string }
+                firstName: { type: string }
+                lastName: { type: string }
                 title: { type: string }
                 note: { type: string }
       responses:
@@ -50,7 +54,8 @@ paths:
               type: object
               properties:
                 year: { type: integer }
-                author: { type: string }
+                firstName: { type: string }
+                lastName: { type: string }
                 title: { type: string }
       responses:
         '200': { description: Book deleted }

@@ -23,18 +23,29 @@ const afterFooter = html.slice(footerIndex);
 // Generate new book sections
 let sections = '';
 Object.keys(books).sort((a, b) => b - a).forEach(year => {
-  sections += `  <section>\n    <h2>&gt; Read — ${year}</h2>\n    <ol>\n`;
-  const sorted = [...books[year]].sort((a, b) => {
-    const aAuthor = a.author || '';
-    const bAuthor = b.author || '';
-    if (aAuthor !== bAuthor) return aAuthor.localeCompare(bAuthor);
-    return (a.title || '').localeCompare(b.title || '');
+  sections += `  <section>\n    <h2>&gt; Read — ${year}</h2>\n`;
+  // Group books by last name, then first name
+  const grouped = {};
+  books[year].forEach(book => {
+    const last = book.lastName || '';
+    const first = book.firstName || '';
+    if (!grouped[last]) grouped[last] = {};
+    if (!grouped[last][first]) grouped[last][first] = [];
+    grouped[last][first].push(book);
   });
-  sorted.forEach(book => {
-    const note = book.note ? ` (${book.note})` : '';
-    sections += `      <li><strong>${book.author}</strong> — <em>${book.title}</em>${note}</li>\n`;
+  const sortedLast = Object.keys(grouped).sort();
+  sortedLast.forEach(last => {
+    const sortedFirst = Object.keys(grouped[last]).sort();
+    sortedFirst.forEach(first => {
+      sections += `    <h3>${last}, ${first}</h3>\n    <ol>\n`;
+      grouped[last][first].sort((a, b) => (a.title || '').localeCompare(b.title || '')).forEach(book => {
+        const note = book.note ? ` (${book.note})` : '';
+        sections += `      <li><em>${book.title}</em>${note}</li>\n`;
+      });
+      sections += '    </ol>\n';
+    });
   });
-  sections += '    </ol>\n  </section>\n';
+  sections += '  </section>\n';
 });
 
 // Rebuild HTML
