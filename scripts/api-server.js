@@ -74,6 +74,40 @@ app.post('/api/books/list', async (req, res) => {
   }
 });
 
+// ============ BOOKS UPDATE/DELETE ============
+app.post('/api/books/update', async (req, res) => {
+  try {
+    const { year, oldAuthor, oldTitle, author, title, note } = req.body;
+    const booksPath = path.join(REPO_PATH, 'data', 'books.json');
+    let books = JSON.parse(fs.readFileSync(booksPath, 'utf8'));
+    if (!books[year]) return res.status(404).json({ error: 'Year not found' });
+    const idx = books[year].findIndex(b => b.author === oldAuthor && b.title === oldTitle);
+    if (idx === -1) return res.status(404).json({ error: 'Book not found' });
+    books[year][idx] = { author, title, note };
+    fs.writeFileSync(booksPath, JSON.stringify(books, null, 2));
+    execFile('node', [path.join(__dirname, 'generate_reading_html.js')], () => {});
+    await commitChanges(`Update book: ${oldTitle} to ${title}`);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+app.post('/api/books/delete', async (req, res) => {
+  try {
+    const { year, author, title } = req.body;
+    const booksPath = path.join(REPO_PATH, 'data', 'books.json');
+    let books = JSON.parse(fs.readFileSync(booksPath, 'utf8'));
+    if (!books[year]) return res.status(404).json({ error: 'Year not found' });
+    books[year] = books[year].filter(b => !(b.author === author && b.title === title));
+    fs.writeFileSync(booksPath, JSON.stringify(books, null, 2));
+    execFile('node', [path.join(__dirname, 'generate_reading_html.js')], () => {});
+    await commitChanges(`Delete book: ${title}`);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ============ CONCERTS ENDPOINTS ============
 
 app.post('/api/concerts/add', async (req, res) => {
@@ -128,6 +162,42 @@ app.post('/api/concerts/list', async (req, res) => {
   }
 });
 
+// ============ CONCERTS UPDATE/DELETE ============
+app.post('/api/concerts/update', async (req, res) => {
+  try {
+    const { oldArtist, oldDate, artist, date, venue, songs } = req.body;
+    const setlistPath = path.join(REPO_PATH, 'data', 'setlists.json');
+    let data = JSON.parse(fs.readFileSync(setlistPath, 'utf8'));
+    const oldKey = `${oldArtist}|${oldDate}`;
+    if (!data[oldKey]) return res.status(404).json({ error: 'Concert not found' });
+    delete data[oldKey];
+    const newKey = `${artist}|${date}`;
+    data[newKey] = { source: '', url: '', songs, venue };
+    fs.writeFileSync(setlistPath, JSON.stringify(data, null, 2));
+    execFile('node', [path.join(__dirname, 'generate_concerts_html.js')], () => {});
+    await commitChanges(`Update concert: ${oldArtist} ${oldDate}`);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+app.post('/api/concerts/delete', async (req, res) => {
+  try {
+    const { artist, date } = req.body;
+    const setlistPath = path.join(REPO_PATH, 'data', 'setlists.json');
+    let data = JSON.parse(fs.readFileSync(setlistPath, 'utf8'));
+    const key = `${artist}|${date}`;
+    if (!data[key]) return res.status(404).json({ error: 'Concert not found' });
+    delete data[key];
+    fs.writeFileSync(setlistPath, JSON.stringify(data, null, 2));
+    execFile('node', [path.join(__dirname, 'generate_concerts_html.js')], () => {});
+    await commitChanges(`Delete concert: ${artist} ${date}`);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ============ TV SHOWS ENDPOINTS ============
 // ============ TRAVEL ENDPOINTS ============
 
@@ -177,33 +247,18 @@ app.post('/api/travel/list', async (req, res) => {
 
 app.post('/api/tv/add', async (req, res) => {
   try {
-    const { show, year = new Date().getFullYear(), type = 'watched' } = req.body;
-
-    if (!show) {
-      return res.status(400).json({ error: 'Show name is required' });
-    }
-
+    const { show, year = new Date().getFullYear(), type = 'watched', seasons = [] } = req.body;
     const tvPath = path.join(REPO_PATH, 'data', 'tv.json');
-    let tv = {};
-    if (fs.existsSync(tvPath)) {
-      tv = JSON.parse(fs.readFileSync(tvPath, 'utf8'));
-    }
+    let tv = fs.existsSync(tvPath) ? JSON.parse(fs.readFileSync(tvPath, 'utf8')) : {};
     if (type === 'watched') {
       if (!tv[year]) tv[year] = [];
-      tv[year].push(show);
-    } else {
-      if (!tv['toWatch']) tv['toWatch'] = [];
-      tv['toWatch'].push(show);
-    }
+      tv[year].push({ show, seasons });
+    // ...existing code...
     fs.writeFileSync(tvPath, JSON.stringify(tv, null, 2));
-    execFile('node', [path.join(__dirname, 'generate_tv_html.js')], (err, stdout, stderr) => {
-      if (err) console.error('Error running generate_tv_html.js:', stderr);
-      else console.log(stdout.trim());
-    });
+    execFile('node', [path.join(__dirname, 'generate_tv_html.js')], () => {});
     await commitChanges(`Add TV show: ${show}`);
     res.json({ success: true, message: `Added "${show}"` });
   } catch (error) {
-    console.error('Error adding TV show:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -216,6 +271,194 @@ app.post('/api/tv/list', async (req, res) => {
       tv = JSON.parse(fs.readFileSync(tvPath, 'utf8'));
     }
     res.json(tv);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ============ TV UPDATE/DELETE ============
+app.post('/api/tv/update', async (req, res) => {
+  try {
+    const { year, oldShow, show, type, seasons = [] } = req.body;
+    const tvPath = path.join(REPO_PATH, 'data', 'tv.json');
+    let tv = fs.existsSync(tvPath) ? JSON.parse(fs.readFileSync(tvPath, 'utf8')) : {};
+    if (type === 'watched') {
+      if (!tv[year]) return res.status(404).json({ error: 'Year not found' });
+      const idx = tv[year].findIndex(s => s.show === oldShow);
+      if (idx === -1) return res.status(404).json({ error: 'Show not found' });
+      tv[year][idx] = { show, seasons };
+    // ...existing code...
+    fs.writeFileSync(tvPath, JSON.stringify(tv, null, 2));
+    execFile('node', [path.join(__dirname, 'generate_tv_html.js')], () => {});
+    await commitChanges(`Update TV show: ${oldShow}`);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+app.post('/api/tv/delete', async (req, res) => {
+  try {
+    const { year, show, type } = req.body;
+    const tvPath = path.join(REPO_PATH, 'data', 'tv.json');
+    let tv = fs.existsSync(tvPath) ? JSON.parse(fs.readFileSync(tvPath, 'utf8')) : {};
+    if (type === 'watched') {
+      if (!tv[year]) return res.status(404).json({ error: 'Year not found' });
+      tv[year] = tv[year].filter(s => s.show !== show);
+    // ...existing code...
+    fs.writeFileSync(tvPath, JSON.stringify(tv, null, 2));
+    execFile('node', [path.join(__dirname, 'generate_tv_html.js')], () => {});
+    await commitChanges(`Delete TV show: ${show}`);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ============ TRAVEL UPDATE/DELETE ============
+app.post('/api/travel/update', async (req, res) => {
+  try {
+    const { type, oldTitle, title, link, extra } = req.body;
+    const travelPath = path.join(REPO_PATH, 'data', 'travel.json');
+    let travel = JSON.parse(fs.readFileSync(travelPath, 'utf8'));
+    if (type === 'upcoming') {
+      if (!travel.upcoming) return res.status(404).json({ error: 'Upcoming not found' });
+      const idx = travel.upcoming.findIndex(t => t === oldTitle);
+      if (idx === -1) return res.status(404).json({ error: 'Trip not found' });
+      travel.upcoming[idx] = title;
+    } else {
+      if (!travel.major) return res.status(404).json({ error: 'Major not found' });
+      const idx = travel.major.findIndex(t => t.title === oldTitle);
+      if (idx === -1) return res.status(404).json({ error: 'Trip not found' });
+      travel.major[idx] = { title, link, extra };
+    }
+    fs.writeFileSync(travelPath, JSON.stringify(travel, null, 2));
+    execFile('node', [path.join(__dirname, 'generate_travel_html.js')], () => {});
+    await commitChanges(`Update travel: ${oldTitle}`);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+app.post('/api/travel/delete', async (req, res) => {
+  try {
+    const { type, title } = req.body;
+    const travelPath = path.join(REPO_PATH, 'data', 'travel.json');
+    let travel = JSON.parse(fs.readFileSync(travelPath, 'utf8'));
+    if (type === 'upcoming') {
+      if (!travel.upcoming) return res.status(404).json({ error: 'Upcoming not found' });
+      travel.upcoming = travel.upcoming.filter(t => t !== title);
+    } else {
+      if (!travel.major) return res.status(404).json({ error: 'Major not found' });
+      travel.major = travel.major.filter(t => t.title !== title);
+    }
+    fs.writeFileSync(travelPath, JSON.stringify(travel, null, 2));
+    execFile('node', [path.join(__dirname, 'generate_travel_html.js')], () => {});
+    await commitChanges(`Delete travel: ${title}`);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ============ TRAVEL TRIP & ENTRY ENDPOINTS ============
+app.post('/api/travel/trip/add', async (req, res) => {
+  try {
+    const { title, start, end } = req.body;
+    const travelPath = path.join(REPO_PATH, 'data', 'travel.json');
+    let travel = fs.existsSync(travelPath) ? JSON.parse(fs.readFileSync(travelPath, 'utf8')) : {};
+    if (!travel.trips) travel.trips = [];
+    travel.trips.push({ title, start, end, entries: [] });
+    fs.writeFileSync(travelPath, JSON.stringify(travel, null, 2));
+    execFile('node', [path.join(__dirname, 'generate_travel_html.js')], () => {});
+    await commitChanges(`Add trip: ${title}`);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+app.post('/api/travel/trip/update', async (req, res) => {
+  try {
+    const { oldTitle, title, start, end } = req.body;
+    const travelPath = path.join(REPO_PATH, 'data', 'travel.json');
+    let travel = fs.existsSync(travelPath) ? JSON.parse(fs.readFileSync(travelPath, 'utf8')) : {};
+    if (!travel.trips) return res.status(404).json({ error: 'No trips found' });
+    const idx = travel.trips.findIndex(t => t.title === oldTitle);
+    if (idx === -1) return res.status(404).json({ error: 'Trip not found' });
+    travel.trips[idx].title = title;
+    travel.trips[idx].start = start;
+    travel.trips[idx].end = end;
+    fs.writeFileSync(travelPath, JSON.stringify(travel, null, 2));
+    execFile('node', [path.join(__dirname, 'generate_travel_html.js')], () => {});
+    await commitChanges(`Update trip: ${oldTitle}`);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+app.post('/api/travel/trip/delete', async (req, res) => {
+  try {
+    const { title } = req.body;
+    const travelPath = path.join(REPO_PATH, 'data', 'travel.json');
+    let travel = fs.existsSync(travelPath) ? JSON.parse(fs.readFileSync(travelPath, 'utf8')) : {};
+    if (!travel.trips) return res.status(404).json({ error: 'No trips found' });
+    travel.trips = travel.trips.filter(t => t.title !== title);
+    fs.writeFileSync(travelPath, JSON.stringify(travel, null, 2));
+    execFile('node', [path.join(__dirname, 'generate_travel_html.js')], () => {});
+    await commitChanges(`Delete trip: ${title}`);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+app.post('/api/travel/entry/add', async (req, res) => {
+  try {
+    const { tripTitle, date, location, text } = req.body;
+    const travelPath = path.join(REPO_PATH, 'data', 'travel.json');
+    let travel = fs.existsSync(travelPath) ? JSON.parse(fs.readFileSync(travelPath, 'utf8')) : {};
+    if (!travel.trips) return res.status(404).json({ error: 'No trips found' });
+    const trip = travel.trips.find(t => t.title === tripTitle);
+    if (!trip) return res.status(404).json({ error: 'Trip not found' });
+    trip.entries.push({ date, location, text });
+    fs.writeFileSync(travelPath, JSON.stringify(travel, null, 2));
+    execFile('node', [path.join(__dirname, 'generate_travel_html.js')], () => {});
+    await commitChanges(`Add entry to trip: ${tripTitle}`);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+app.post('/api/travel/entry/update', async (req, res) => {
+  try {
+    const { tripTitle, oldDate, oldLocation, date, location, text } = req.body;
+    const travelPath = path.join(REPO_PATH, 'data', 'travel.json');
+    let travel = fs.existsSync(travelPath) ? JSON.parse(fs.readFileSync(travelPath, 'utf8')) : {};
+    if (!travel.trips) return res.status(404).json({ error: 'No trips found' });
+    const trip = travel.trips.find(t => t.title === tripTitle);
+    if (!trip) return res.status(404).json({ error: 'Trip not found' });
+    const idx = trip.entries.findIndex(e => e.date === oldDate && e.location === oldLocation);
+    if (idx === -1) return res.status(404).json({ error: 'Entry not found' });
+    trip.entries[idx] = { date, location, text };
+    fs.writeFileSync(travelPath, JSON.stringify(travel, null, 2));
+    execFile('node', [path.join(__dirname, 'generate_travel_html.js')], () => {});
+    await commitChanges(`Update entry in trip: ${tripTitle}`);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+app.post('/api/travel/entry/delete', async (req, res) => {
+  try {
+    const { tripTitle, date, location } = req.body;
+    const travelPath = path.join(REPO_PATH, 'data', 'travel.json');
+    let travel = fs.existsSync(travelPath) ? JSON.parse(fs.readFileSync(travelPath, 'utf8')) : {};
+    if (!travel.trips) return res.status(404).json({ error: 'No trips found' });
+    const trip = travel.trips.find(t => t.title === tripTitle);
+    if (!trip) return res.status(404).json({ error: 'Trip not found' });
+    trip.entries = trip.entries.filter(e => !(e.date === date && e.location === location));
+    fs.writeFileSync(travelPath, JSON.stringify(travel, null, 2));
+    execFile('node', [path.join(__dirname, 'generate_travel_html.js')], () => {});
+    await commitChanges(`Delete entry from trip: ${tripTitle}`);
+    res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

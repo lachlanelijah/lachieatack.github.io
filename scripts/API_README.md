@@ -111,16 +111,14 @@ All endpoints require `X-API-Key` header with your API key (default: `test-key`)
 - **POST** `/api/books/list`
   - Returns all books
 
-### Concerts
+node api-client.js tv add --show "True Detective" --type watchlist
 
 - **POST** `/api/concerts/add`
   - Required: `artist`, `date`, `venue`
   - Optional: `songs` (array of song names)
-
 - **POST** `/api/concerts/list`
   - Returns all concerts
 
-### TV Shows
 
 - **POST** `/api/tv/add`
   - Required: `show`

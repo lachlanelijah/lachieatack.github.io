@@ -18,17 +18,28 @@ const afterFooter = html.slice(footerIndex);
 
 // Generate new TV sections
 let sections = '';
-if (tv.toWatch && tv.toWatch.length) {
-  sections += '  <section>\n    <h2>&gt; To Watch</h2>\n    <div class="list-grid">\n';
-  tv.toWatch.forEach(show => {
-    sections += `      <div class="card">${show}</div>\n`;
-  });
-  sections += '    </div>\n  </section>\n';
-}
+// ...existing code...
 Object.keys(tv).filter(y => y !== 'toWatch').sort((a, b) => b - a).forEach(year => {
   sections += `  <section>\n    <h2>&gt; Watched — ${year}</h2>\n    <ul>\n`;
-  tv[year].forEach(show => {
-    sections += `      <li>${show}</li>\n`;
+  const sorted = [...tv[year]].sort((a, b) => {
+    const aName = typeof a === 'string' ? a : (a.show || '');
+    const bName = typeof b === 'string' ? b : (b.show || '');
+    return aName.localeCompare(bName);
+  });
+  sorted.forEach(entry => {
+    if (typeof entry === 'string') {
+      sections += `      <li>${entry}</li>\n`;
+    } else if (entry && typeof entry === 'object') {
+      sections += `      <li>${entry.show}\n`;
+      if (Array.isArray(entry.seasons) && entry.seasons.length) {
+        sections += '        <ul class=\"seasons-list\">\n';
+        entry.seasons.forEach(season => {
+          sections += `          <li>Season ${season}</li>\n`;
+        });
+        sections += '        </ul>\n';
+      }
+      sections += '      </li>\n';
+    }
   });
   sections += '    </ul>\n  </section>\n';
 });

@@ -1,15 +1,27 @@
 {
-  "toWatch": [
-    "Black Mirror",
-    "True Detective (S1)",
-    "Fargo"
-  ],
   "2026": [
-    "Severance",
-    "The Bear"
+     { "show": "The Makanai: Cooking for the Maiko House", "seasons": [1] },
+     { "show": "Stranger Things", "seasons": [5] },
+     { "show": "The Studio", "seasons": [1] },
+     { "show": "Your Friends & Neighbours", "seasons": [1] }
   ],
   "2025": [
-    "Dark",
-    "Stranger Things"
-  ]
+      { "show": "Guy Montgomery’s Guy Mont Spelling Bee", "seasons": [2] },
+      { "show": "Mythic Quest", "seasons": [4] },
+      { "show": "Severance", "seasons": [2] },
+      { "show": "Shrinking", "seasons": [2] }
+  ],
+    "2024": [
+      { "show": "Alice in Borderland", "seasons": [1] },
+      { "show": "BLUE EYE SAMURAI", "seasons": [1] },
+      { "show": "Chernobyl", "seasons": [1] },
+      { "show": "For All Mankind", "seasons": [4] },
+      { "show": "Guy Montgomery’s Guy Mont Spelling Bee", "seasons": [1] },
+      { "show": "Mad Men", "seasons": [7] },
+      { "show": "Pachinko", "seasons": [2] },
+      { "show": "Russian Doll", "seasons": [1] },
+      { "show": "Shogun", "seasons": [1] },
+      { "show": "Seinfeld", "seasons": [9] },
+      { "show": "Taskmaster AU", "seasons": [2,3] }
+    ]
 }

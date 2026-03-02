@@ -36,6 +36,17 @@ section{margin:18px 0;padding:12px;border-radius:6px;background:rgba(0,0,0,0.02)
 h2{font-size:13px;margin:0 0 8px 0;color:var(--accent);}
 ul{margin:0;padding-left:20px}
 li{margin:6px 0}
+ul.seasons-list {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 2px 0 2px 18px;
+  padding-left: 16px;
+}
+ul.seasons-list li {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 2px 0;
+}
 a{color:var(--text);text-decoration:none}
 a.external{color:var(--accent)}
 .metadata{color:var(--muted);font-size:12px;margin-top:6px}

@@ -1,0 +1,278 @@
+openapi: 3.0.0
+info:
+  title: Lachlan Website API
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+paths:
+  /api/books/add:
+    post:
+      summary: Add a book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                author: { type: string }
+                title: { type: string }
+                year: { type: integer }
+                note: { type: string }
+      responses:
+        '200': { description: Book added }
+  /api/books/update:
+    post:
+      summary: Update a book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                year: { type: integer }
+                oldAuthor: { type: string }
+                oldTitle: { type: string }
+                author: { type: string }
+                title: { type: string }
+                note: { type: string }
+      responses:
+        '200': { description: Book updated }
+  /api/books/delete:
+    post:
+      summary: Delete a book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                year: { type: integer }
+                author: { type: string }
+                title: { type: string }
+      responses:
+        '200': { description: Book deleted }
+  /api/concerts/add:
+    post:
+      summary: Add a concert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                artist: { type: string }
+                date: { type: string }
+                venue: { type: string }
+                songs: { type: array, items: { type: string } }
+      responses:
+        '200': { description: Concert added }
+  /api/concerts/update:
+    post:
+      summary: Update a concert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                oldArtist: { type: string }
+                oldDate: { type: string }
+                artist: { type: string }
+                date: { type: string }
+                venue: { type: string }
+                songs: { type: array, items: { type: string } }
+      responses:
+        '200': { description: Concert updated }
+  /api/concerts/delete:
+    post:
+      summary: Delete a concert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                artist: { type: string }
+                date: { type: string }
+      responses:
+        '200': { description: Concert deleted }
+  /api/tv/add:
+    post:
+      summary: Add a TV show
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                show: { type: string }
+                year: { type: integer }
+                type: { type: string, enum: [watched] }
+      responses:
+        '200': { description: TV show added }
+  /api/tv/update:
+    post:
+      summary: Update a TV show
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                year: { type: integer }
+                oldShow: { type: string }
+                show: { type: string }
+                type: { type: string, enum: [watched] }
+      responses:
+        '200': { description: TV show updated }
+  /api/tv/delete:
+    post:
+      summary: Delete a TV show
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                year: { type: integer }
+                show: { type: string }
+                type: { type: string, enum: [watched] }
+      responses:
+        '200': { description: TV show deleted }
+  /api/travel/trip/add:
+    post:
+      summary: Add a trip
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                start: { type: string }
+                end: { type: string }
+      responses:
+        '200': { description: Trip added }
+  /api/travel/trip/update:
+    post:
+      summary: Update a trip
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                oldTitle: { type: string }
+                title: { type: string }
+                start: { type: string }
+                end: { type: string }
+      responses:
+        '200': { description: Trip updated }
+  /api/travel/trip/delete:
+    post:
+      summary: Delete a trip
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+      responses:
+        '200': { description: Trip deleted }
+  /api/travel/entry/add:
+    post:
+      summary: Add a journal entry to a trip
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tripTitle: { type: string }
+                date: { type: string }
+                location: { type: string }
+                text: { type: string }
+      responses:
+        '200': { description: Entry added }
+  /api/travel/entry/update:
+    post:
+      summary: Update a journal entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tripTitle: { type: string }
+                oldDate: { type: string }
+                oldLocation: { type: string }
+                date: { type: string }
+                location: { type: string }
+                text: { type: string }
+      responses:
+        '200': { description: Entry updated }
+  /api/travel/entry/delete:
+    post:
+      summary: Delete a journal entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tripTitle: { type: string }
+                date: { type: string }
+                location: { type: string }
+      responses:
+        '200': { description: Entry deleted }
+  /api/status:
+    get:
+      summary: Get API status
+      responses:
+        '200':
+          description: API status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+                  port: { type: integer }
+                  baseDir: { type: string }
+  /api/commit:
+    post:
+      summary: Manually commit changes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message: { type: string }
+      responses:
+        '200':
+          description: Changes committed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }

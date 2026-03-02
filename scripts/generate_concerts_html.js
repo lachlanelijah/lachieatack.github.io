@@ -21,9 +21,11 @@ let sections = '';
 Object.entries(setlists).forEach(([key, value]) => {
   const [artist, date] = key.split('|');
   sections += `  <section>\n    <h2>${artist} — ${date}</h2>\n    <ul>\n`;
-  value.songs.forEach(song => {
-    sections += `      <li>${song}</li>\n`;
-  });
+  if (Array.isArray(value.songs)) {
+    value.songs.forEach(song => {
+      sections += `      <li>${song}</li>\n`;
+    });
+  }
   sections += '    </ul>\n  </section>\n';
 });
 

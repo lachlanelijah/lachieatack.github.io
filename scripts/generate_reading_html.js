@@ -24,7 +24,13 @@ const afterFooter = html.slice(footerIndex);
 let sections = '';
 Object.keys(books).sort((a, b) => b - a).forEach(year => {
   sections += `  <section>\n    <h2>&gt; Read — ${year}</h2>\n    <ol>\n`;
-  books[year].forEach(book => {
+  const sorted = [...books[year]].sort((a, b) => {
+    const aAuthor = a.author || '';
+    const bAuthor = b.author || '';
+    if (aAuthor !== bAuthor) return aAuthor.localeCompare(bAuthor);
+    return (a.title || '').localeCompare(b.title || '');
+  });
+  sorted.forEach(book => {
     const note = book.note ? ` (${book.note})` : '';
     sections += `      <li><strong>${book.author}</strong> — <em>${book.title}</em>${note}</li>\n`;
   });
