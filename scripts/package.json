@@ -1,0 +1,20 @@
+{
+  "name": "website-api",
+  "version": "1.0.0",
+  "description": "Local API for managing website content",
+  "main": "api-server.js",
+  "scripts": {
+    "start": "node api-server.js",
+    "dev": "node api-server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "dotenv": "^16.0.3",
+    "octokit": "^2.0.14",
+    "simple-git": "^3.18.0",
+    "cheerio": "^1.0.0-rc.12"
+  }
+}
