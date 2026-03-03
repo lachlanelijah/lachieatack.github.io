@@ -33,7 +33,7 @@ app.use(authenticateAPI);
 
 // ============ BOOKS ENDPOINTS ============
 
-app.post('/api/books/add', async (req, res) => {
+app.post('/api/books', async (req, res) => {
   try {
     const { firstName, lastName, title, year = new Date().getFullYear(), note = '' } = req.body;
 
@@ -60,7 +60,7 @@ app.post('/api/books/add', async (req, res) => {
   }
 });
 
-app.post('/api/books/list', async (req, res) => {
+app.get('/api/books', async (req, res) => {
   try {
     const booksPath = path.join(REPO_PATH, 'data', 'books.json');
     let books = [];
@@ -74,7 +74,7 @@ app.post('/api/books/list', async (req, res) => {
 });
 
 // ============ BOOKS UPDATE/DELETE ============
-app.post('/api/books/update', async (req, res) => {
+app.put('/api/books', async (req, res) => {
   try {
     const { oldFirstName, oldLastName, oldTitle, firstName, lastName, title, year, note } = req.body;
     const booksPath = path.join(REPO_PATH, 'data', 'books.json');
@@ -90,7 +90,7 @@ app.post('/api/books/update', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-app.post('/api/books/delete', async (req, res) => {
+app.delete('/api/books', async (req, res) => {
   try {
     const { firstName, lastName, title } = req.body;
     const booksPath = path.join(REPO_PATH, 'data', 'books.json');
@@ -107,7 +107,7 @@ app.post('/api/books/delete', async (req, res) => {
 
 // ============ CONCERTS ENDPOINTS ============
 
-app.post('/api/concerts/add', async (req, res) => {
+app.post('/api/concerts', async (req, res) => {
   try {
     const { band, date, venue, support = [], setlist = { source: '', url: '', songs: [] } } = req.body;
 
@@ -134,7 +134,7 @@ app.post('/api/concerts/add', async (req, res) => {
   }
 });
 
-app.post('/api/concerts/list', async (req, res) => {
+app.get('/api/concerts', async (req, res) => {
   try {
     const concertsPath = path.join(REPO_PATH, 'data', 'concerts.json');
     let concerts = [];
@@ -148,7 +148,7 @@ app.post('/api/concerts/list', async (req, res) => {
 });
 
 // ============ CONCERTS UPDATE/DELETE ============
-app.post('/api/concerts/update', async (req, res) => {
+app.put('/api/concerts', async (req, res) => {
   try {
     const { oldBand, oldDate, band, date, venue, support = [], setlist = { source: '', url: '', songs: [] } } = req.body;
     const concertsPath = path.join(REPO_PATH, 'data', 'concerts.json');
@@ -164,7 +164,7 @@ app.post('/api/concerts/update', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-app.post('/api/concerts/delete', async (req, res) => {
+app.delete('/api/concerts', async (req, res) => {
   try {
     const { band, date } = req.body;
     const concertsPath = path.join(REPO_PATH, 'data', 'concerts.json');
@@ -372,7 +372,7 @@ app.post('/api/travel/delete', async (req, res) => {
 });
 
 // ============ TRAVEL TRIP & ENTRY ENDPOINTS ============
-app.post('/api/travel/trip/add', async (req, res) => {
+app.post('/api/travel/trip', async (req, res) => {
   try {
     const { title, start, end } = req.body;
     const travelPath = path.join(REPO_PATH, 'data', 'travel.json');
@@ -387,7 +387,7 @@ app.post('/api/travel/trip/add', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-app.post('/api/travel/trip/update', async (req, res) => {
+app.put('/api/travel/trip', async (req, res) => {
   try {
     const { oldTitle, title, start, end } = req.body;
     const travelPath = path.join(REPO_PATH, 'data', 'travel.json');
@@ -406,7 +406,7 @@ app.post('/api/travel/trip/update', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-app.post('/api/travel/trip/delete', async (req, res) => {
+app.delete('/api/travel/trip', async (req, res) => {
   try {
     const { title } = req.body;
     const travelPath = path.join(REPO_PATH, 'data', 'travel.json');
@@ -421,7 +421,7 @@ app.post('/api/travel/trip/delete', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-app.post('/api/travel/entry/add', async (req, res) => {
+app.post('/api/travel/entry', async (req, res) => {
   try {
     const { tripTitle, date, location, text } = req.body;
     const travelPath = path.join(REPO_PATH, 'data', 'travel.json');
@@ -438,7 +438,7 @@ app.post('/api/travel/entry/add', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-app.post('/api/travel/entry/update', async (req, res) => {
+app.put('/api/travel/entry', async (req, res) => {
   try {
     const { tripTitle, oldDate, oldLocation, date, location, text } = req.body;
     const travelPath = path.join(REPO_PATH, 'data', 'travel.json');
@@ -457,7 +457,7 @@ app.post('/api/travel/entry/update', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-app.post('/api/travel/entry/delete', async (req, res) => {
+app.delete('/api/travel/entry', async (req, res) => {
   try {
     const { tripTitle, date, location } = req.body;
     const travelPath = path.join(REPO_PATH, 'data', 'travel.json');
